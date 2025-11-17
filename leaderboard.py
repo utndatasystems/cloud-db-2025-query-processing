@@ -8,32 +8,21 @@ group_folders = sys.argv[2:]
 
 results = []
 
-# Save original working directory
-cwd = os.getcwd()
-
 for folder in group_folders:
     file = f"{bench_type}.py"
-    folder_path = os.path.join(cwd, folder)
+    file_path = os.path.join(folder, file)
 
-    # Ensure folder exists
-    if not os.path.exists(os.path.join(folder_path, file)):
+    if not os.path.exists(file_path):
         continue
 
-    print("Evaluating:", f"{folder}/{file}")
+    print("Evaluating:", file_path)
 
-    # Change into the folder
-    os.chdir(folder_path)
-
-    # Run script inside the folder
-    process = Popen(["python", file], stdout=PIPE, stderr=PIPE)
+    # Run using full path
+    process = Popen(["python", file_path], stdout=PIPE, stderr=PIPE)
     output, err = process.communicate()
-
-    # Go back immediately
-    os.chdir(cwd)
 
     text = output.decode("utf-8", errors="replace")
 
-    # Extract "Result:" line
     lines = [line for line in text.splitlines() if line.startswith("Result:")]
 
     if len(lines) != 1:
@@ -45,14 +34,12 @@ for folder in group_folders:
     print(result_line)
 
     try:
-        # format: "Result: 123.45 ms"
         value = float(result_line.split()[1])
     except:
         value = float("inf")
 
     results.append((value, folder))
 
-# Sort and print results
 results.sort(key=lambda x: x[0])
 
 formatted_results = [

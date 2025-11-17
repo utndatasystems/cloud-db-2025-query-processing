@@ -3,7 +3,7 @@ import time
 
 
 def validate(actual_result):
-    expected_result = pd.read_csv('../dmv_fuel_type_passengers_expected.csv')
+    expected_result = pd.read_csv('dmv_fuel_type_passengers_expected.csv')
     if not actual_result.equals(expected_result):
         print("EXPECTED:\n===")
         print(expected_result)
@@ -31,7 +31,7 @@ def query(df):
 
 
 # Read data
-df = pd.read_csv('../dmv_fuel_type_passengers.csv')
+df = pd.read_csv('dmv_fuel_type_passengers.csv')
 
 # Run query (data is loaded before, everything else needs to be timed)
 start = time.perf_counter()

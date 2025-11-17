@@ -26,7 +26,7 @@ def query(df):
 
 
 # Read data
-df = pd.read_csv('../dmv_fuel_type_passengers_sample.csv')
+df = pd.read_csv('dmv_fuel_type_passengers_sample.csv')
 
 # Run query (data is loaded before, everything else needs to be timed)
 start = time.perf_counter()
