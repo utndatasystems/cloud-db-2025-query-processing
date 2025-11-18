@@ -21,6 +21,6 @@
 1. Checkin:
    ```bash
    git add group-aweseome
-   git commit -m "updated group-aweseome"
+   git commit -m "updated group-awesome"
    git fetch && git rebase origin/main && git push origin main
    ```
