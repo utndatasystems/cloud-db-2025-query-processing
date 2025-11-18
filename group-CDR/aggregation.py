@@ -87,7 +87,7 @@ def query(df):
     for key, value in ht.items():
             rows.append({"fuel_type": key, "vehicle_count": value[0], "avg_passengers":  round(value[1] / value[2], 1) if value[2] != 0 else float('nan')})
 
-    return pd.DataFrame(rows).sort_values(by="fuel_type")
+    return pd.DataFrame(rows).sort_values(by="fuel_type", ignore_index=True)
 
 
 # Read data

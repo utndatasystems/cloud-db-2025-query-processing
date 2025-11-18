@@ -53,7 +53,7 @@ def query(con):
             continue
         
 
-    return pd.DataFrame({'volume': [round(volume,0)]})
+    return pd.DataFrame({'volume': [int(volume)]})
 
 
 # ---------------------------------------------------------
