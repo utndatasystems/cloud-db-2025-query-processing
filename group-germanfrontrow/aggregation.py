@@ -89,7 +89,7 @@ def query(df):
     return result_df
 
 # Read data
-df = pd.read_csv('dmv_fuel_type_passengers_sample.csv')
+df = pd.read_csv('dmv_fuel_type_passengers.csv')
 
 
 # Run query (data is loaded before, everything else needs to be timed)
