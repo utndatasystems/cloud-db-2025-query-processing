@@ -1,7 +1,7 @@
 import pandas as pd
 import duckdb
 import time
-
+import os
 
 def validate(actual_result):
     expected_result = pd.read_csv('join_expected.csv')
@@ -25,7 +25,35 @@ def query(con):
     #    where l_partkey = p_partkey
     #    and l_shipdate >= date '1995-09-01'
     #    and l_shipdate < date '1995-10-01';
-    return pd.DataFrame({'volume': [2906154294]})
+
+    lineitem = con.sql("""
+        SELECT l_extendedprice, l_partkey, l_shipdate
+        FROM lineitem
+    """).fetchdf()
+
+    part = con.sql("""
+        SELECT p_partkey
+        FROM part
+    """).fetchdf()
+
+    # build hash table for lineitem (likely smaller due to filters)
+    ht = {}
+    volume = 0
+    for l_tuple in lineitem.itertuples(index=False):
+        if l_tuple.l_shipdate >= pd.Timestamp('1995-09-01') and l_tuple.l_shipdate < pd.Timestamp('1995-10-01'):
+            try:
+                ht[l_tuple.l_partkey] +=  l_tuple.l_extendedprice
+            except KeyError:
+                ht[l_tuple.l_partkey] =  l_tuple.l_extendedprice
+    
+    for p_tuple in part.itertuples(index=False):
+        try: 
+            volume += ht[p_tuple.p_partkey]
+        except KeyError:
+            continue
+        
+
+    return pd.DataFrame({'volume': [round(volume,0)]})
 
 
 # ---------------------------------------------------------
@@ -34,20 +62,21 @@ def query(con):
 
 con = duckdb.connect(database=':memory:', read_only=False)
 
-# Load TPCH extension
-con.execute("INSTALL tpch;")
-con.execute("LOAD tpch;")
+if not (os.path.exists("lineitem-parquet") and os.path.exists("part-parquet")):
+    # Load TPCH extension
+    con.execute("INSTALL tpch;")
+    con.execute("LOAD tpch;")
 
-# Generate SF=1 TPC-H dataset (creates all TPCH tables)
-con.execute("CALL dbgen(sf=1);")
+    # Generate SF=1 TPC-H dataset (creates all TPCH tables)
+    con.execute("CALL dbgen(sf=1);")
 
-# Cache two tables to Parquet
-con.execute("COPY lineitem TO 'lineitem.parquet' (FORMAT PARQUET);")
-con.execute("COPY part     TO 'part.parquet'     (FORMAT PARQUET);")
+    # Cache two tables to Parquet
+    con.execute("COPY lineitem TO 'lineitem.parquet' (FORMAT PARQUET);")
+    con.execute("COPY part     TO 'part.parquet'     (FORMAT PARQUET);")
 
-# Drop the auto-generated TPCH tables to reload into your schema
-con.execute("DROP TABLE lineitem;")
-con.execute("DROP TABLE part;")
+    # Drop the auto-generated TPCH tables to reload into your schema
+    con.execute("DROP TABLE lineitem;")
+    con.execute("DROP TABLE part;")
 
 
 # ---------------------------------------------------------
