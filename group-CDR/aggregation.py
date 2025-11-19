@@ -77,12 +77,11 @@ def query(df):
             passengers_value = passengers
             avg_count_value = 1
             
-        if fuel_type not in ht.keys():
+        try:         
+            count, value, avg_count = ht[fuel_type]
+            ht[fuel_type] = (count + 1, value + passengers_value, avg_count + avg_count_value)
+        except KeyError:
             ht[fuel_type] = (1, passengers_value, avg_count_value)
-            continue
-
-        count, value, avg_count = ht[fuel_type]
-        ht[fuel_type] = (count + 1, value + passengers_value, avg_count + avg_count_value)
     
     for key, value in ht.items():
             rows.append({"fuel_type": key, "vehicle_count": value[0], "avg_passengers":  round(value[1] / value[2], 1) if value[2] != 0 else float('nan')})
