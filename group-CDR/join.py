@@ -135,6 +135,6 @@ end = time.time()
 
 # Validate result and print time
 if validate(result):
-    print("Result:", end - start)
+  print(f'Result: {(end - start) * 1e3} ms')
 else:
-    print("Result: Error")
+  print("Result: Error")
