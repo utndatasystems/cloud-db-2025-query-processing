@@ -18,7 +18,7 @@ for folder in group_folders:
     print("Evaluating:", file_path)
 
     # Run using full path
-    process = Popen(["python", file_path], stdout=PIPE, stderr=PIPE)
+    process = Popen([sys.executable, file_path], stdout=PIPE, stderr=PIPE)
     output, err = process.communicate()
 
     text = output.decode("utf-8", errors="replace")
