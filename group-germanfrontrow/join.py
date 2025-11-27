@@ -4,7 +4,7 @@ import time
 
 
 def validate(actual_result):
-    expected_result = pd.read_csv('join_expected.csv')
+    expected_result = pd.read_csv('/Users/luca/Desktop/UTN/UTN-3-CD/cloud-db-2025-query-processing/join_expected.csv')
     # Hint: make sure the types of the data frame match as well: print(expected_result.dtypes)
     if not actual_result.equals(expected_result):
         print("EXPECTED:\n===")
@@ -25,7 +25,41 @@ def query(con):
     #    where l_partkey = p_partkey
     #    and l_shipdate >= date '1995-09-01'
     #    and l_shipdate < date '1995-10-01';
-    return pd.DataFrame({'volume': [2906154294]})
+
+    start = time.time()
+    # Load only necessary columns
+    lineitem = con.execute("SELECT l_partkey, l_extendedprice, l_shipdate FROM lineitem").df()
+    part = con.execute("SELECT p_partkey FROM part").df()
+    
+    # Filter lineitem for the date range (again I assume this is optimal)
+    filtered = lineitem[
+        (lineitem['l_shipdate'] >= '1995-09-01') &
+        (lineitem['l_shipdate'] < '1995-10-01')
+    ]
+    end = time.time()
+    print("Data loading and filtering time:", end - start)
+    
+    # Create a set for fast lookup: part_key (set lookup is O(1))
+    start = time.time()
+    part_keys = set(part['p_partkey'])
+    end = time.time()
+    print("Creating part_dict time:", end - start)
+
+    start = time.time()
+    # Manually join by matching l_partkey with p_partkey
+    total = 0
+    
+    l_partkeys = filtered['l_partkey'].tolist()
+    l_extendedprices = filtered['l_extendedprice'].tolist()
+    
+    for pk, price in zip(l_partkeys, l_extendedprices):
+        if pk in part_keys:  # Join condition: l_partkey = p_partkey
+            total += price
+
+    end = time.time()
+    print("Join operation time:", end - start)
+
+    return pd.DataFrame({'volume': [int(total)]})
 
 
 # ---------------------------------------------------------
